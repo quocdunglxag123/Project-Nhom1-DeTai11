@@ -1,0 +1,140 @@
+#createTblEmployees
+import json
+import boto3 
+
+dynamodb = boto3.resource('dynamodb')
+
+def lambda_handler(event, context):
+    table = dynamodb.create_table (
+    TableName = 'TblEmployees',
+       KeySchema = [
+           {
+               'AttributeName': 'UID',
+               'KeyType': 'HASH'
+           }
+           ],
+           AttributeDefinitions = [
+               {
+                   'AttributeName': 'UID',
+                   'AttributeType': 'S'
+               }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits':1,
+                'WriteCapacityUnits':1
+            }
+          
+    )
+###
+#deleteTblEmployees
+import json
+import boto3
+
+dynamodb = boto3.resource('dynamodb')
+
+def lambda_handler(event, context):
+    table_name = json.loads(event['Records'][0]['body'])['TableName']
+    table = dynamodb.Table(table_name)
+    res = table.delete()
+    return res
+    
+###
+#insertEmployee
+import json
+import boto3
+
+dynamodb=boto3.resource('dynamodb')
+
+def lambda_handler(event, context):
+    input = json.loads(event['Records'][0]['body'])
+    table=dynamodb.Table('TblEmployees')
+    columns = ["UID","EmpName","UserName","Password","Email","EmpRole"]
+    res = table.put_item(
+        Item={
+            columns[0]: input['UID'],
+            columns[1]: input['EmpName'],
+            columns[2]: input['UserName'],
+            columns[3]: input['Password'],
+            columns[4]: input['Email'],
+            columns[5]: input['EmpRole']
+        }
+    )
+    return res
+    
+###
+#scanTblEmployees
+import json
+import boto3
+
+dynamodb=boto3.resource('dynamodb')
+sqs_client = boto3.client("sqs")
+__QueueUrl__ = "https://sqs.us-east-1.amazonaws.com/092451480368/ScanTblEmployees"
+
+def lambda_handler(event, context):
+    table_name='TblEmployees'
+    table=dynamodb.Table(table_name)
+    res=table.scan()
+    send_message(res)
+
+def send_message(msg):
+    response = sqs_client.send_message(
+        QueueUrl = __QueueUrl__,
+        MessageBody=json.dumps(msg, ensure_ascii=False)
+    )
+    print(response)
+
+
+
+
+
+######################Dùng trong tương lai###################
+###getEmployeeByUsername
+import boto3
+from boto3.dynamodb.conditions import Key,Attr
+
+dynamodb=boto3.resource('dynamodb')
+
+def lambda_handler(event, context):
+    table_name='TblEmployees'
+    table=dynamodb.Table(table_name)
+    res=table.scan(
+        FilterExpression=Attr('UserName').eq(event['UserName'])
+    )
+    return res
+###getEmployeeByUID
+import boto3
+dynamodb=boto3.resource('dynamodb')
+
+def lambda_handler(event, context):
+    table_name='TblEmployees'
+    primary_key={'UID':event['UID']}
+    dynamodb_table=dynamodb.Table(table_name)
+    res=dynamodb_table.get_item(Key=primary_key)
+    item=res['Item']
+    return item
+###deleteEmployee
+import boto3
+dynamodb = boto3.resource('dynamodb')
+
+def lambda_handler(event, context):
+    table_name='TblEmployees'
+    primary_key={'UID': event['UID']}
+    dynamodb_table = dynamodb.Table(table_name)
+    res=dynamodb_table.delete_item(Key=primary_key)
+    return res
+###updateEmployee
+import boto3
+dynamodb = boto3.resource('dynamodb')
+
+def lambda_handler(event, context):
+    table_name='TblEmployees'
+    primary_key={'UID' : event['UID']}
+    dynamodb_table = dynamodb.Table(table_name)
+    response = dynamodb_table.update_item(
+            Key=primary_key,
+            UpdateExpression='set EmpName = :EmpName, EmpRole = :EmpRole',
+            ExpressionAttributeValues={
+                ':EmpName' : event['EmpName'],
+                ':EmpRole' : event['EmpRole']
+            })
+    return response
