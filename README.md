@@ -10,9 +10,9 @@
 
 ## Công nghệ sử dụng 
 
-**Client:** Html, Css3, Bootstrap
+**Client:** Html, Css3, Bootstrap, JS
 
-**Server:** Flask Framework, AWS Lambda, AWS SQS, AWS EC2
+**Server:** PHP, AWS Lambda, AWS SQS, AWS EC2
 
 **Database:** DynamoDB
 
