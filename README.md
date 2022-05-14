@@ -26,7 +26,7 @@
 
 ## Yêu cầu 
 - Vào LearnLab--> start lab --> Aws Detail -->   AWS CLI --> show  copy bảng credentials
-- vào thư mục C:\Users\tên máy\.aws\credentials
+- vào thư mục C:\Users\tên máy\ .aws\credentials
 - past AWS CLI vừa copy file credentials 
 - git clone https://github.com/quocdunglxag123/Project-Nhom1-DeTai11.git
 - vào AWS Tạo các SQS và Lamda theo file Lamda.txt
